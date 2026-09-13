@@ -1,0 +1,371 @@
+// Prisma Schema for CloudPilot (Phase 3.1 - Repository Intelligence Foundation)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  githubId  String   @unique @map("github_id")
+  username  String
+  email     String?  @unique
+  name      String?
+  avatarUrl String?  @map("avatar_url")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  githubAccount GitHubAccount?
+  sessions      Session[]
+  projects      Project[]
+  deployments   Deployment[]
+  aiAgentInteractions AiAgentInteraction[]
+
+  @@map("users")
+}
+
+model GitHubAccount {
+  id          String   @id @default(uuid())
+  userId      String   @unique @map("user_id")
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  githubId    String   @unique @map("github_id")
+  accessToken String   @map("access_token") // Encrypted ciphertext (AES-256-GCM)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("github_accounts")
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id")
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt    DateTime @map("expires_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@index([sessionToken])
+  @@index([userId])
+  @@map("sessions")
+}
+
+enum ProjectStatus {
+  CONNECTED
+  DISCONNECTED
+}
+
+model Project {
+  id                 String              @id @default(uuid())
+  userId             String              @map("user_id")
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  githubRepositoryId Int                 @map("github_repository_id")
+  repositoryOwner    String              @map("repository_owner")
+  repositoryName     String              @map("repository_name")
+  repositoryFullName String              @map("repository_full_name")
+  defaultBranch      String              @default("main") @map("default_branch")
+  private            Boolean             @default(false)
+  cloneUrl           String              @map("clone_url")
+  htmlUrl            String              @map("html_url")
+  status             ProjectStatus       @default(CONNECTED)
+  createdAt          DateTime            @default(now()) @map("created_at")
+  webhookSecret       String?             @map("webhook_secret") // Encrypted AES-256-GCM
+
+  analysis           RepositoryAnalysis?
+  deployments        Deployment[]
+  environments       Environment[]
+  webhookEvents      GithubWebhookEvent[]
+  aiAnalyses         AiAnalysis[]
+  aiDiagnoses        AiDiagnosis[]
+  aiRepairSuggestions AiRepairSuggestion[]
+  aiAgentInteractions AiAgentInteraction[]
+
+  @@unique([userId, githubRepositoryId])
+  @@index([userId])
+  @@map("projects")
+}
+
+model RepositoryAnalysis {
+  id               String   @id @default(uuid())
+  projectId        String   @unique @map("project_id")
+  project          Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectType      String   @map("project_type")
+  primaryLanguage  String?  @map("primary_language")
+  framework        String?
+  packageManager   String?  @map("package_manager")
+  isMonorepo       Boolean? @map("is_monorepo")
+  hasDockerfile    Boolean  @default(false) @map("has_dockerfile")
+  hasDockerCompose Boolean  @default(false) @map("has_docker_compose")
+  hasEnvExample    Boolean  @default(false) @map("has_env_example")
+  detectedFiles    String[] @map("detected_files")
+  structure        Json?    @map("structure")
+  readiness        Json?    @map("readiness")
+  analysisVersion  String   @default("2.0.0") @map("analysis_version")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@map("repository_analyses")
+}
+
+enum DeploymentStatus {
+  PENDING
+  VALIDATING
+  BUILDING
+  STARTING
+  HEALTH_CHECKING
+  RUNNING
+  FAILED
+  STOPPED
+  CANCELLED
+}
+
+enum DeploymentHealthStatus {
+  HEALTHY
+  UNHEALTHY
+  UNKNOWN
+  NOT_APPLICABLE
+}
+
+enum DeploymentTriggerType {
+  MANUAL
+  WEBHOOK
+  ROLLBACK
+}
+
+enum EnvironmentType {
+  DEVELOPMENT
+  STAGING
+  PRODUCTION
+  PREVIEW
+  CUSTOM
+}
+
+model Environment {
+  id                   String            @id @default(uuid())
+  projectId            String            @map("project_id")
+  project              Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  name                 String            // "development" | "staging" | "production" or custom
+  type                 EnvironmentType   @default(DEVELOPMENT)
+  branchPattern        String            @default("main") @map("branch_pattern")
+  autoDeployEnabled    Boolean           @default(false) @map("auto_deploy_enabled")
+  autoRollbackEnabled  Boolean           @default(false) @map("auto_rollback_enabled")
+  maxRollbackAttempts  Int               @default(1) @map("max_rollback_attempts")
+  createdAt            DateTime          @default(now()) @map("created_at")
+  updatedAt            DateTime          @updatedAt @map("updated_at")
+
+  variables            EnvironmentVariable[]
+  deployments          Deployment[]
+
+  @@unique([projectId, name])
+  @@index([projectId])
+  @@map("environments")
+}
+
+model EnvironmentVariable {
+  id             String      @id @default(uuid())
+  environmentId  String      @map("environment_id")
+  environment    Environment @relation(fields: [environmentId], references: [id], onDelete: Cascade)
+  key            String
+  encryptedValue String      @map("encrypted_value") // AES-256-GCM ciphertext
+  isSecret       Boolean     @default(true) @map("is_secret")
+  createdAt      DateTime    @default(now()) @map("created_at")
+  updatedAt      DateTime    @updatedAt @map("updated_at")
+
+  @@unique([environmentId, key])
+  @@index([environmentId])
+  @@map("environment_variables")
+}
+
+enum WebhookEventStatus {
+  PROCESSED
+  IGNORED
+  FAILED
+  DUPLICATE
+}
+
+model GithubWebhookEvent {
+  id           String             @id @default(uuid())
+  deliveryId   String             @unique @map("delivery_id") // X-GitHub-Delivery
+  projectId    String             @map("project_id")
+  project      Project            @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  event        String             @default("push")
+  sender       String?
+  ref          String?
+  commitSha    String?            @map("commit_sha")
+  status       WebhookEventStatus @default(PROCESSED)
+  reason       String?
+  deploymentId String?            @map("deployment_id")
+  createdAt    DateTime           @default(now()) @map("created_at")
+
+  @@index([projectId, createdAt])
+  @@map("github_webhook_events")
+}
+
+model Deployment {
+  id                   String                 @id @default(uuid())
+  projectId            String                 @map("project_id")
+  project              Project                @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  userId               String                 @map("user_id")
+  user                 User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status               DeploymentStatus       @default(PENDING)
+  strategy             String
+  imageTag             String?                @map("image_tag")
+  containerName        String?                @map("container_name")
+  exposedPort          Int?                   @map("exposed_port")
+  hostPort             Int?                   @map("host_port")
+  url                  String?
+  healthStatus         DeploymentHealthStatus @default(UNKNOWN) @map("health_status")
+  startedAt            DateTime?              @map("started_at")
+  completedAt          DateTime?              @map("completed_at")
+  buildDurationMs      Int?                   @map("build_duration_ms")
+  runtimeDurationMs    Int?                   @map("runtime_duration_ms")
+  buildSummary         String?                @map("build_summary")
+  runtimeSummary       String?                @map("runtime_summary")
+  errorMessage         String?                @map("error_message")
+  plan                 Json?                  @map("plan")
+  logs                 Json?                  @map("logs")
+
+  // Phase 7 Versioning & Environment metadata
+  deploymentNumber     Int?                   @map("deployment_number")
+  commitSha            String?                @map("commit_sha")
+  commitMessage        String?                @map("commit_message")
+  branch               String?
+  environmentId        String?                @map("environment_id")
+  environment          Environment?           @relation(fields: [environmentId], references: [id], onDelete: SetNull)
+  configurationVersion String?                @default("1.0.0") @map("configuration_version")
+  buildId              String?                @map("build_id")
+  triggerType          DeploymentTriggerType  @default(MANUAL) @map("trigger_type")
+  triggeredBy          String?                @map("triggered_by")
+  previousDeploymentId String?                @map("previous_deployment_id")
+  rollbackTargetId     String?                @map("rollback_target_id")
+  isRollback           Boolean                @default(false) @map("is_rollback")
+
+  createdAt            DateTime               @default(now()) @map("created_at")
+  updatedAt            DateTime               @updatedAt @map("updated_at")
+
+  metrics              DeploymentMetric[]
+  events               DeploymentEvent[]
+  aiDiagnoses          AiDiagnosis[]
+  aiRepairSuggestions   AiRepairSuggestion[]
+
+  @@index([projectId])
+  @@index([userId])
+  @@index([environmentId])
+  @@index([status])
+  @@unique([projectId, deploymentNumber])
+  @@map("deployments")
+}
+
+model DeploymentMetric {
+  id                 String     @id @default(uuid())
+  deploymentId       String     @map("deployment_id")
+  deployment         Deployment @relation(fields: [deploymentId], references: [id], onDelete: Cascade)
+  cpuPercent         Float      @map("cpu_percent")
+  memoryUsageBytes   Float      @map("memory_usage_bytes")
+  memoryLimitBytes   Float      @map("memory_limit_bytes")
+  memoryPercent      Float      @map("memory_percent")
+  networkInputBytes  Float      @default(0) @map("network_input_bytes")
+  networkOutputBytes Float      @default(0) @map("network_output_bytes")
+  blockInputBytes    Float      @default(0) @map("block_input_bytes")
+  blockOutputBytes   Float      @default(0) @map("block_output_bytes")
+  pids               Int        @default(1)
+  timestamp          DateTime   @default(now())
+
+  @@index([deploymentId, timestamp])
+  @@map("deployment_metrics")
+}
+
+model DeploymentEvent {
+  id           String     @id @default(uuid())
+  deploymentId String     @map("deployment_id")
+  deployment   Deployment @relation(fields: [deploymentId], references: [id], onDelete: Cascade)
+  type         String     // STATUS_CHANGE, HIGH_CPU_USAGE, HIGH_MEMORY_USAGE, HEALTH_CHECK_FAILED, CONTAINER_RESTART, CONTAINER_EXIT
+  severity     String     @default("INFO") // INFO, WARNING, CRITICAL
+  message      String
+  metadata     Json?
+  timestamp    DateTime   @default(now())
+
+  @@index([deploymentId, timestamp])
+  @@map("deployment_events")
+}
+
+model AiAnalysis {
+  id               String   @id @default(uuid())
+  projectId        String   @map("project_id")
+  project          Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  understanding    Json
+  modelIdentifier  String   @map("model_identifier")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@index([projectId, createdAt])
+  @@map("ai_analyses")
+}
+
+model AiDiagnosis {
+  id              String      @id @default(uuid())
+  projectId       String      @map("project_id")
+  project         Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  deploymentId    String?     @map("deployment_id")
+  deployment      Deployment? @relation(fields: [deploymentId], references: [id], onDelete: Cascade)
+  category        String      // BUILD, INCIDENT
+  diagnosis       Json
+  modelIdentifier String      @map("model_identifier")
+  createdAt       DateTime    @default(now()) @map("created_at")
+
+  @@index([projectId, createdAt])
+  @@index([deploymentId, createdAt])
+  @@map("ai_diagnoses")
+}
+
+model AiRepairSuggestion {
+  id                     String      @id @default(uuid())
+  projectId              String      @map("project_id")
+  project                Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  deploymentId           String?     @map("deployment_id")
+  deployment             Deployment? @relation(fields: [deploymentId], references: [id], onDelete: Cascade)
+  title                  String
+  problem                String
+  proposedChange         Json        @map("proposed_change")
+  reasoning              String
+  risk                   String      @default("MEDIUM") // LOW, MEDIUM, HIGH
+  requiresHumanApproval Boolean     @default(true) @map("requires_human_approval")
+  status                 String      @default("PROPOSED") // PROPOSED, APPROVED, REJECTED, APPLIED
+  evidence               Json
+  confidence             String      @default("HIGH") // CONFIRMED, HIGH, MEDIUM, LOW, UNKNOWN
+  validationRequirements String[]    @map("validation_requirements")
+  modelIdentifier        String      @map("model_identifier")
+  createdAt              DateTime    @default(now()) @map("created_at")
+  updatedAt              DateTime    @updatedAt @map("updated_at")
+
+  @@index([projectId, status])
+  @@index([deploymentId])
+  @@map("ai_repair_suggestions")
+}
+
+model AiAgentInteraction {
+  id              String   @id @default(uuid())
+  projectId       String   @map("project_id")
+  project         Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  userId          String   @map("user_id")
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deploymentId    String?  @map("deployment_id")
+  prompt          String
+  answer          String
+  steps           Json
+  toolsUsed       String[] @map("tools_used")
+  confidence      String   @default("HIGH")
+  evidenceGathered Json     @map("evidence_gathered")
+  modelIdentifier String   @map("model_identifier")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@index([projectId, createdAt])
+  @@index([userId, createdAt])
+  @@map("ai_agent_interactions")
+}
+
+

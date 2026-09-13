@@ -1,0 +1,23 @@
+{
+  "name": "@cloudpilot/shared",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Shared TypeScript definitions and utilities for CloudPilot",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "type-check": "tsc --noEmit",
+    "clean": "rimraf dist"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.2"
+  }
+}
