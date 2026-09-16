@@ -1,211 +1,406 @@
 # CloudPilot
 
-### AI-Powered Cloud Deployment, Repository Intelligence & Observability Platform
+> **AI-Powered Cloud Deployment, Repository Intelligence & Observability Platform**
 
-CloudPilot is a full-stack developer platform that transforms a GitHub repository into an analyzed, containerized, monitored, and manageable deployment.
+CloudPilot is a full-stack developer platform that analyzes GitHub repositories, evaluates deployment readiness, automates Docker-based deployments, monitors running applications, and provides AI-assisted diagnostics.
 
-It brings repository intelligence, automated Docker deployment, observability, AI-assisted diagnostics, CI/CD, environment management, versioning, and rollback into a single developer console.
+### Core Workflow
 
----
-
-## Overview
-
-CloudPilot is built around a simple workflow:
-
-```text
-Repository
-    ↓
-Repository Analysis
-    ↓
-Deployment Planning
-    ↓
-Docker Build
-    ↓
-Container Deployment
-    ↓
-Health Validation
-    ↓
-Observability
-    ↓
-AI Diagnostics
-    ↓
-CI/CD & Rollback
-```
-
-The platform follows the principle:
-
-> **Analyze first, deploy safely, observe continuously, and keep AI actions bounded by human approval.**
+**GitHub Repository → Repository Analysis → Readiness Check → Deployment → Monitoring → AI Diagnostics → CI/CD → Rollback**
 
 ---
 
-## Features
+## ✨ Features
 
-### Repository Intelligence
-
-CloudPilot analyzes a repository before deployment without executing arbitrary repository code.
-
-* Language detection
-* Framework detection
-* Package manager detection
-* Monorepo detection
-* Application role detection
-* Entry-point discovery
-* Build and start command detection
-* Application port detection
-* Output-directory detection
-* Environment-variable analysis
-* Docker and Docker Compose detection
-* Deployment readiness scoring
-* Blocker and warning identification
-
-### Automated Deployment
-
-CloudPilot manages the complete deployment lifecycle:
-
-* Repository source acquisition
-* Deployment readiness analysis
-* Deployment plan generation
-* Dockerfile generation or validation
-* Docker image building
-* Dynamic host-port allocation
-* Container startup
-* Health validation
-* Deployment state and log tracking
-
-Application ports and host ports are intentionally separated. For example, an application can listen on `5000` inside its container while CloudPilot exposes it through a dynamically allocated host port.
-
-### Real-Time Observability
-
-Running deployments can be monitored through:
-
-* CPU utilization
-* Memory usage and limits
-* Network I/O
-* Block I/O
-* Process count
-* Container status
-* Health-check status
-* Health latency
-* Uptime
-* Operational events
-* Container and deployment logs
-
-Logs are sanitized before being returned to the frontend, including ANSI stripping and secret/token redaction.
-
-### Controlled AI Intelligence
-
-CloudPilot uses AI as a bounded engineering assistant rather than an unrestricted execution agent.
-
-AI capabilities include:
-
-* Repository understanding
-* Architecture analysis
-* Deployment proposals
-* Build diagnosis
-* Incident diagnosis
-* Repair suggestions
-* Bounded agent workflows
-
-AI operations are protected by:
-
-* Sanitized repository context
-* Tool restrictions
-* Execution timeouts
-* Iteration limits
-* Dedicated AI rate limits
-* Explicit human approval for repair actions
-
-### CI/CD and Rollback
-
-CloudPilot supports:
-
-* Multiple environments
-* Environment-specific variables
-* Encrypted environment secrets
-* GitHub webhooks
-* Deployment versioning
-* Sequential deployment tracking
-* Rollback to previous healthy versions
+- 🔗 **GitHub Integration** — Connect GitHub and import repositories.
+- 🔍 **Repository Intelligence** — Detect languages, frameworks, package managers, monorepos and application structure.
+- 📋 **Deployment Readiness** — Identify blockers, warnings, deployment strategy and readiness score.
+- 🐳 **Automated Deployment** — Generate Dockerfiles, build images and run containers.
+- ❤️ **Health Monitoring** — Validate deployed applications using health checks.
+- 📊 **Observability** — Monitor CPU, memory, network, container health and uptime.
+- 📜 **Log Management** — Searchable deployment and container logs with secret redaction.
+- 🤖 **AI Intelligence** — Architecture understanding, deployment analysis and incident diagnosis.
+- 🌍 **Multi-Environment CI/CD** — Manage environments and encrypted variables.
+- 🔄 **Rollback** — Maintain deployment versions and roll back to previous healthy deployments.
+- 🔐 **Security** — OAuth, encrypted secrets, rate limiting and secure container execution.
 
 ---
 
-# Architecture
+# 🖥️ Screenshots
 
-CloudPilot uses a monorepo architecture with a Next.js frontend, NestJS backend, shared TypeScript contracts, PostgreSQL, Redis, and Docker.
+Screenshots are stored in `docs/screenshots/`.
+
+### Dashboard
+
+![CloudPilot Dashboard](docs/screenshots/dashboard.png)
+
+### Repository Analysis
+
+![Repository Analysis](docs/screenshots/repository-analysis.png)
+
+### Deployment
+
+![Deployment](docs/screenshots/deployment.png)
+
+### Observability
+
+![Observability](docs/screenshots/observability.png)
+
+### AI Intelligence
+
+![AI Intelligence](docs/screenshots/ai-intelligence.png)
+
+---
+
+# 🏗️ Overall Architecture
+
+CloudPilot follows a modular monorepo architecture with a Next.js frontend, NestJS backend, shared contracts, PostgreSQL, Redis and Docker.
 
 ```mermaid
 flowchart TB
-    U[Developer] --> W[Next.js Web Console]
-    W --> A[NestJS API]
+    U[Developer]
+    W[Next.js Web Console]
+    A[NestJS API]
+    G[GitHub Integration]
+    R[Repository Intelligence]
+    D[Deployment Engine]
+    O[Observability]
+    AI[AI Intelligence]
+    C[CI/CD & Environments]
+    P[(PostgreSQL)]
+    X[(Redis)]
+    DK[Docker Engine]
+    APP[Application Containers]
 
-    A --> AUTH[Authentication]
-    A --> GH[GitHub Integration]
-    A --> RI[Repository Intelligence]
-    A --> DEP[Deployment Engine]
-    A --> OBS[Observability]
-    A --> AI[AI Intelligence]
-    A --> CICD[CI/CD]
+    U --> W
+    W --> A
 
-    AUTH --> PG[(PostgreSQL)]
-    GH --> PG
-    RI --> PG
-    DEP --> PG
-    OBS --> PG
-    CICD --> PG
+    A --> G
+    A --> R
+    A --> D
+    A --> O
+    A --> AI
+    A --> C
 
-    A --> REDIS[(Redis)]
+    A --> P
+    A --> X
 
-    RI --> WS[Temporary Repository Workspace]
-    WS --> DEP
+    R --> D
+    D --> DK
+    DK --> APP
+    APP --> O
 
-    DEP --> DOCKER[Docker Engine]
-    DOCKER --> APP[Application Container]
-
-    APP --> OBS
-
-    GH --> WH[GitHub Webhooks]
-    WH --> CICD
-
-    W --> SHARED[Shared Types]
-    A --> SHARED
+    G --> C
+    R --> AI
+    O --> AI
+    D --> AI
 ```
 
 ### Architecture Components
 
-| Component                   | Responsibility                                                          |
-| --------------------------- | ----------------------------------------------------------------------- |
-| **Web Console**             | Dashboard, projects, deployment, observability, AI and CI/CD interfaces |
-| **API**                     | Authentication, authorization, APIs and platform orchestration          |
-| **Repository Intelligence** | Repository structure and deployment analysis                            |
-| **Deployment Engine**       | Docker builds, containers, ports and health checks                      |
-| **Observability**           | Metrics, logs, health and operational events                            |
-| **AI Layer**                | Repository understanding, diagnostics and repair suggestions            |
-| **CI/CD**                   | Environments, webhooks, versions and rollback                           |
-| **PostgreSQL**              | Persistent application and operational state                            |
-| **Redis**                   | Runtime and fast-access state                                           |
-| **Docker**                  | Application build and execution                                         |
+| Component | Purpose |
+|---|---|
+| **Next.js Web Console** | Developer dashboard and project management interface |
+| **NestJS API** | Authentication, APIs and platform orchestration |
+| **GitHub Integration** | OAuth authentication and repository access |
+| **Repository Intelligence** | Static repository and application analysis |
+| **Deployment Engine** | Dockerfile generation, image builds and container lifecycle |
+| **Observability** | Metrics, logs, health checks and operational events |
+| **AI Intelligence** | Repository understanding and deployment/incident diagnostics |
+| **CI/CD** | Environments, variables, webhooks and rollback |
+| **PostgreSQL** | Persistent application and deployment data |
+| **Redis** | Runtime and caching support |
+| **Docker** | Application containerization and execution |
 
 ---
 
-# Project Structure
+# 🔄 How CloudPilot Works
 
-CloudPilot follows an npm workspace monorepo structure.
+### 1. Connect Repository
+
+The developer authenticates with GitHub and selects a repository to create a CloudPilot project.
+
+### 2. Analyze Repository
+
+CloudPilot acquires the repository into a temporary workspace and performs static analysis.
+
+It detects:
+
+- Programming languages
+- Frameworks
+- Package managers
+- Monorepos
+- Application roles
+- Entry points
+- Build/start commands
+- Ports
+- Output directories
+- Environment requirements
+- Docker configuration
+
+### 3. Evaluate Readiness
+
+The repository is evaluated for deployment feasibility.
+
+CloudPilot identifies:
+
+- Deployment strategy
+- Blockers
+- Warnings
+- Environment requirements
+- Application configuration
+- Readiness score
+
+### 4. Generate Deployment Plan
+
+A deployment plan is generated based on the detected application structure.
+
+### 5. Deploy with Docker
+
+CloudPilot builds the application image, starts the container, allocates a host port and performs health validation.
+
+### 6. Monitor
+
+Once deployed, CloudPilot collects:
+
+- CPU usage
+- Memory usage
+- Network traffic
+- Block I/O
+- Process count
+- Container status
+- Health status
+- Uptime
+- Logs
+- Operational events
+
+### 7. AI Diagnostics
+
+AI can analyze repository context, deployment logs, telemetry and incidents to provide engineering diagnostics and repair suggestions.
+
+AI actions are bounded and important repair actions require human approval.
+
+### 8. CI/CD and Rollback
+
+GitHub webhooks can trigger deployment workflows. CloudPilot maintains deployment versions and supports rollback to previous healthy deployments.
+
+---
+
+# 🔍 Repository Intelligence
+
+CloudPilot uses deterministic static analysis before deployment rather than executing arbitrary repository code.
+
+### Analysis Pipeline
+
+```text
+Repository
+    ↓
+Source Acquisition
+    ↓
+Repository Analysis
+    ↓
+Application Structure Detection
+    ↓
+Deployment Readiness
+    ↓
+Deployment Strategy
+```
+
+The analysis system can identify frontend, backend, full-stack, API, worker, CLI, library and service applications.
+
+For monorepositories, CloudPilot can detect multiple applications and their relationships.
+
+---
+
+# 🚀 Deployment Engine
+
+The deployment engine converts repository analysis into a runnable Docker deployment.
+
+### Deployment Process
+
+```text
+Repository
+    ↓
+Deployment Plan
+    ↓
+Dockerfile Generation
+    ↓
+Docker Image Build
+    ↓
+Container Start
+    ↓
+Port Allocation
+    ↓
+Health Check
+    ↓
+Running Deployment
+```
+
+Supported deployment strategies include:
+
+- Static frontend applications
+- Node.js applications
+- Python applications
+- Java applications
+- Go applications
+- Docker applications
+- Multi-application projects
+
+### Application Port vs Host Port
+
+CloudPilot distinguishes between the port used by an application inside its container and the port exposed on the host.
+
+For example:
+
+```text
+Application Port: 5000
+Host Port:        11002
+```
+
+This allows multiple deployments to run without requiring applications to use unique internal ports.
+
+---
+
+# 📊 Observability
+
+CloudPilot provides runtime visibility after deployment.
+
+### Metrics
+
+- CPU utilization
+- Memory usage
+- Network input/output
+- Block I/O
+- Process count
+- Container status
+- Health status
+- Health latency
+- Uptime
+
+### Logs
+
+Deployment and container logs can be viewed through the dashboard with:
+
+- Search
+- Filtering
+- Log tailing
+- Copy functionality
+- ANSI stripping
+- Secret/token redaction
+
+### Events
+
+Operational events are recorded for important container and resource conditions, allowing CloudPilot to identify potential incidents.
+
+---
+
+# 🤖 AI Intelligence
+
+The AI layer provides assistance throughout the deployment lifecycle.
+
+### Capabilities
+
+- Repository understanding
+- Architecture analysis
+- Deployment proposals
+- Build failure diagnosis
+- Incident diagnosis
+- Repair suggestions
+- Bounded engineering agent
+
+### AI Safety
+
+CloudPilot intentionally limits AI capabilities:
+
+- Repository context is sanitized.
+- AI cannot directly execute arbitrary shell commands.
+- AI cannot directly execute database commands.
+- AI requests have strict timeouts.
+- Agent iterations and tool calls are bounded.
+- AI endpoints have dedicated rate limits.
+- Repair actions require human approval.
+
+---
+
+# 🔐 Security
+
+CloudPilot uses multiple security layers.
+
+### Authentication
+
+- GitHub OAuth
+- CSRF-protected OAuth state
+- Server-side HTTP-only sessions
+- Project ownership validation
+
+### Secrets
+
+- AES-256-GCM encryption
+- Encrypted GitHub tokens
+- Encrypted environment variables
+- Masked secrets in the frontend
+- No authentication tokens stored in browser storage
+
+### API Security
+
+- Helmet security headers
+- Global rate limiting
+- Stricter AI rate limits
+- Global exception handling
+- No production stack-trace leakage
+- Startup configuration validation
+
+### Container Security
+
+- Docker isolation
+- CPU and memory limits
+- `no-new-privileges`
+- Localhost-bound host ports
+- Temporary repository workspaces
+- Cleanup of temporary resources
+
+### Webhook Security
+
+- HMAC verification
+- Idempotent webhook processing
+- Deployment version tracking
+
+---
+
+# 🗂️ Project Structure
 
 ```text
 CloudPilot/
 │
 ├── apps/
-│   │
-│   ├── web/                         # Next.js frontend
+│   ├── web/                              # Next.js frontend
 │   │   ├── app/
 │   │   │   ├── dashboard/
-│   │   │   └── projects/[id]/
+│   │   │   ├── projects/
+│   │   │   │   └── [id]/
+│   │   │   ├── layout.tsx
+│   │   │   ├── page.tsx
+│   │   │   └── globals.css
+│   │   │
 │   │   ├── components/
 │   │   │   ├── ui/
+│   │   │   │   ├── copy-button.tsx
+│   │   │   │   ├── detail-drawer.tsx
+│   │   │   │   ├── detail-modal.tsx
+│   │   │   │   ├── status-badge.tsx
+│   │   │   │   ├── theme-provider.tsx
+│   │   │   │   └── theme-toggle.tsx
+│   │   │   │
 │   │   │   └── project/
+│   │   │       ├── project-header.tsx
+│   │   │       ├── project-health-summary.tsx
+│   │   │       ├── project-nav.tsx
+│   │   │       ├── modals/
+│   │   │       └── tabs/
+│   │   │
 │   │   └── ...
 │   │
-│   └── api/                         # NestJS backend
+│   └── api/                              # NestJS backend
 │       ├── src/
 │       │   ├── auth/
 │       │   ├── github/
@@ -216,26 +411,32 @@ CloudPilot/
 │       │   ├── ai/
 │       │   ├── cicd/
 │       │   ├── health/
-│       │   ├── prisma/
 │       │   └── main.ts
+│       │
 │       ├── prisma/
 │       │   └── schema.prisma
 │       └── ...
 │
 ├── packages/
-│   └── shared/                      # Shared TypeScript contracts
+│   └── shared/                           # Shared TypeScript contracts
 │       ├── src/
 │       │   ├── dto/
-│       │   └── types/
+│       │   ├── types/
+│       │   └── index.ts
 │       └── package.json
 │
 ├── infrastructure/
-│   └── docker/                      # Docker configuration
+│   └── docker/                           # Docker configuration
 │
 ├── docs/
 │   ├── ARCHITECTURE.md
 │   ├── SECURITY.md
 │   └── screenshots/
+│       ├── dashboard.png
+│       ├── repository-analysis.png
+│       ├── deployment.png
+│       ├── observability.png
+│       └── ai-intelligence.png
 │
 ├── .env.example
 ├── docker-compose.yml
@@ -246,144 +447,79 @@ CloudPilot/
 
 ---
 
-# Technology Stack
+# 🛠️ Technology Stack
 
-| Category               | Technology                                           |
-| ---------------------- | ---------------------------------------------------- |
-| **Frontend**           | Next.js 15, React, TypeScript                        |
-| **Styling**            | Tailwind CSS                                         |
-| **Backend**            | NestJS 11, TypeScript                                |
-| **ORM**                | Prisma                                               |
-| **Database**           | PostgreSQL 16                                        |
-| **Cache**              | Redis 7                                              |
-| **Containerization**   | Docker, Docker Compose                               |
-| **Authentication**     | GitHub OAuth, HTTP-only sessions                     |
-| **Security**           | Helmet, CSRF protection, AES-256-GCM, rate limiting  |
-| **AI**                 | Controlled AI diagnostics and bounded agent workflow |
-| **CI/CD**              | GitHub Webhooks, environments, versioning, rollback  |
-| **Testing**            | Unit/integration tests, type-checking, linting       |
-| **Package Management** | npm workspaces                                       |
-
----
-
-# Security
-
-CloudPilot applies security controls across authentication, APIs, secrets, containers, AI operations, and CI/CD.
-
-### Authentication & Secrets
-
-* GitHub OAuth authentication
-* CSRF-protected OAuth state
-* HTTP-only server-side sessions
-* AES-256-GCM encrypted credentials
-* Encrypted environment variables
-* Frontend secret masking
-
-### API Security
-
-* Helmet security headers
-* Global request rate limiting
-* Dedicated limits for AI routes
-* Global exception handling
-* Production-safe error responses
-* Startup configuration validation
-* Project ownership checks
-
-### Container Security
-
-* Docker-based isolation
-* Resource limits
-* `no-new-privileges`
-* Localhost-bound host ports
-* Temporary repository workspaces
-* Cleanup of temporary and orphaned resources
-
-### CI/CD Security
-
-* HMAC verification for GitHub webhooks
-* Idempotent webhook processing
-* Encrypted environment variables
-* Deployment version tracking
-* Controlled rollback
+| Category | Technologies |
+|---|---|
+| Frontend | Next.js 15, React, TypeScript, Tailwind CSS |
+| Backend | NestJS 11, TypeScript |
+| ORM | Prisma |
+| Database | PostgreSQL 16 |
+| Runtime | Redis 7 |
+| Containerization | Docker, Docker Compose |
+| Authentication | GitHub OAuth, HTTP-only Sessions |
+| Security | Helmet, AES-256-GCM, Rate Limiting |
+| AI | AI Diagnostics, Deployment Analysis, Agent Workflow |
+| CI/CD | GitHub Webhooks, Environments, Rollback |
+| Package Management | npm Workspaces |
+| Testing | Unit Tests, Integration Tests, Type Check, Lint, Build |
 
 ---
 
-# API Overview
+# 🚦 Development Roadmap
 
-CloudPilot exposes REST APIs across its major platform modules.
+CloudPilot was developed through eight major phases.
 
-| Module             | Operations                                             |
-| ------------------ | ------------------------------------------------------ |
-| **Authentication** | GitHub OAuth, sessions, logout                         |
-| **GitHub**         | Repository and branch access                           |
-| **Projects**       | Project creation and management                        |
-| **Analysis**       | Repository, structure and readiness analysis           |
-| **Deployment**     | Plans, deployment, status, logs and cancellation       |
-| **Observability**  | Metrics, telemetry, logs and events                    |
-| **AI**             | Understanding, proposals, diagnosis and agent workflow |
-| **Environments**   | Environment and variable management                    |
-| **CI/CD**          | Settings, webhook events and rollback                  |
-
-### Representative Endpoints
-
-```text
-GET    /auth/github
-GET    /auth/me
-POST   /auth/logout
-
-GET    /github/repositories
-
-POST   /projects
-GET    /projects/:id
-POST   /projects/:id/analyze
-GET    /projects/:id/readiness
-
-POST   /projects/:id/deploy
-GET    /projects/:id/deployments
-
-GET    /projects/:id/deployments/:depId/telemetry
-GET    /projects/:id/deployments/:depId/logs
-
-POST   /projects/:projectId/ai/understand
-POST   /projects/:projectId/ai/deployment-proposal
-POST   /projects/:projectId/ai/agent
-
-GET    /projects/:projectId/environments
-POST   /projects/:projectId/deployments/:depId/rollback
-
-POST   /webhooks/github
-```
+| Phase | Focus | Status |
+|---|---|---|
+| **1** | Project Foundation | ✅ Complete |
+| **2** | Authentication, GitHub Integration & Projects | ✅ Complete |
+| **3** | Repository Intelligence | ✅ Complete |
+| **4** | Containerization & Deployment Engine | ✅ Complete |
+| **5** | Observability & Real-Time Monitoring | ✅ Complete |
+| **6** | Controlled AI Intelligence | ✅ Complete |
+| **7** | Advanced Engineering & CI/CD | ✅ Complete |
+| **8** | Production Hardening & Polish | ✅ Complete |
 
 ---
 
-# Project Roadmap
+# 📡 API Overview
 
-| Phase | Focus                                         | Status   |
-| ----- | --------------------------------------------- | -------- |
-| **1** | Project Foundation                            | Complete |
-| **2** | Authentication, GitHub Integration & Projects | Complete |
-| **3** | Repository Intelligence                       | Complete |
-| **4** | Containerization & Deployment Engine          | Complete |
-| **5** | Observability & Real-Time Monitoring          | Complete |
-| **6** | Controlled AI Intelligence                    | Complete |
-| **7** | Advanced Engineering & CI/CD                  | Complete |
-| **8** | Production Hardening & Polish                 | Complete |
+CloudPilot provides REST APIs organized around its main platform capabilities.
+
+| API Area | Purpose |
+|---|---|
+| `/auth` | GitHub authentication and sessions |
+| `/github` | Repository and branch access |
+| `/projects` | Project management |
+| `/projects/:id/analyze` | Repository analysis |
+| `/projects/:id/analyze-structure` | Application structure detection |
+| `/projects/:id/analyze-readiness` | Deployment readiness |
+| `/projects/:id/deployment-plan` | Deployment planning |
+| `/projects/:id/deploy` | Docker deployment |
+| `/projects/:id/deployments` | Deployment management |
+| `/projects/:id/deployments/:id/telemetry` | Runtime telemetry |
+| `/projects/:id/deployments/:id/logs/tail` | Live container logs |
+| `/projects/:id/ai/*` | AI intelligence and diagnostics |
+| `/projects/:id/environments` | Environment management |
+| `/projects/:id/deployments/:id/rollback` | Deployment rollback |
+| `/webhooks/github` | GitHub webhook processing |
 
 ---
 
-# Getting Started
+# ⚙️ Getting Started
 
 ## Prerequisites
 
-* Node.js 20+ or 22+
-* npm 10+
-* Docker Desktop
-* Docker Compose
-* Git
-* GitHub account
-* GitHub OAuth application
+- Node.js 20+
+- npm 10+
+- Docker Desktop
+- Docker Compose
+- Git
+- GitHub account
+- GitHub OAuth application
 
-## 1. Clone
+## 1. Clone Repository
 
 ```bash
 git clone https://github.com/L-Praveen36/CloudPilot.git
@@ -398,25 +534,25 @@ npm install
 
 ## 3. Configure Environment
 
-Create the local environment file:
+Create `.env` from `.env.example`:
 
 ```bash
 cp .env.example .env
 ```
 
-Generate a 32-byte encryption key:
+Generate the encryption key:
 
 ```bash
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
-Set the generated value as:
+Add the generated value to:
 
 ```text
 GITHUB_TOKEN_ENCRYPTION_KEY=<64-character-hex-key>
 ```
 
-Configure the remaining GitHub, PostgreSQL, Redis, and AI variables required by the environment.
+Configure the remaining GitHub, PostgreSQL, Redis and AI variables in `.env`.
 
 > Never commit `.env` or real credentials to Git.
 
@@ -426,7 +562,7 @@ Configure the remaining GitHub, PostgreSQL, Redis, and AI variables required by 
 docker compose up -d
 ```
 
-## 5. Setup Database
+## 5. Initialize Database
 
 ```bash
 npm run db:generate
@@ -439,7 +575,7 @@ npm run db:push
 npm run dev:api
 ```
 
-API:
+Backend:
 
 ```text
 http://localhost:3001
@@ -467,9 +603,9 @@ http://localhost:3000
 
 ---
 
-# Testing
+# 🧪 Testing & Verification
 
-Run the complete verification suite:
+Run the project quality checks:
 
 ```bash
 npm test
@@ -478,61 +614,31 @@ npm run lint
 npm run build
 ```
 
-The project includes automated testing across authentication, GitHub integration, repository intelligence, deployment, observability, AI, CI/CD, and production-hardening functionality.
+These checks cover the frontend, backend and major CloudPilot capabilities including repository analysis, deployment, observability, AI and CI/CD.
 
 ---
 
-# Documentation
+# 📚 Documentation
 
 Additional technical documentation:
 
-* [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — detailed architecture and workflows
-* [`docs/SECURITY.md`](docs/SECURITY.md) — security model and execution boundaries
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
+- [`docs/SECURITY.md`](docs/SECURITY.md)
 
 ---
 
-# Engineering Highlights
-
-### Repository Intelligence
-
-Deterministic static analysis evaluates repositories before deployment and identifies technologies, frameworks, structure, commands, ports, and deployment readiness.
-
-### Automated Deployment
-
-Dockerfile generation or validation, image building, dynamic host-port allocation, container startup, and health validation are handled by the deployment engine.
-
-### Observability
-
-Running deployments provide container metrics, searchable logs, health information, uptime, and operational events.
-
-### Guarded AI
-
-AI assists with repository understanding, deployment diagnostics, incident analysis, and repair suggestions while remaining bounded by technical limits and human approval.
-
-### Multi-Environment CI/CD
-
-Environment-specific configuration, encrypted variables, GitHub webhooks, deployment versions, and rollback are integrated into the platform.
-
-### Security by Design
-
-Encrypted credentials, HTTP-only sessions, rate limiting, secure container execution, webhook verification, and log sanitization are built into the platform.
-
----
-
-# Author
+# 👨‍💻 Author
 
 **Lunavath Praveen Kumar**
 
-B.Tech — Mathematics and Computing
+B.Tech — Mathematics and Computing  
 Indian Institute of Technology Indore
 
-**GitHub:** [L-Praveen36](https://github.com/L-Praveen36)
-**Portfolio:** [portfolio-praveen-one](https://portfolio-praveen-one.vercel.app/)
+- GitHub: [L-Praveen36](https://github.com/L-Praveen36)
+- Portfolio: [portfolio-praveen-one](https://portfolio-praveen-one.vercel.app/)
 
 ---
 
-## CloudPilot
+## ⭐ CloudPilot
 
-> **Repository Intelligence → Deployment → Observability → AI Diagnostics → CI/CD → Rollback**
-
-CloudPilot turns application deployment from a collection of separate engineering tasks into a unified developer workflow.
+**Analyze repositories. Plan deployments. Deploy with Docker. Monitor applications. Diagnose issues with AI. Manage CI/CD and rollback.**
