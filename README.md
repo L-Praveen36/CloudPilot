@@ -625,7 +625,7 @@ Additional technical documentation:
 - [`docs/SECURITY.md`](docs/SECURITY.md)
 
 ---
-
+  
 # 👨‍💻 Author
 
 **Lunavath Praveen Kumar**
