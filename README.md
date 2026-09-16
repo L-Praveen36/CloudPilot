@@ -10,49 +10,48 @@ CloudPilot is a full-stack developer platform that analyzes GitHub repositories,
 
 ---
 
-## ✨ Features
+##  Features
 
-- 🔗 **GitHub Integration** — Connect GitHub and import repositories.
-- 🔍 **Repository Intelligence** — Detect languages, frameworks, package managers, monorepos and application structure.
-- 📋 **Deployment Readiness** — Identify blockers, warnings, deployment strategy and readiness score.
-- 🐳 **Automated Deployment** — Generate Dockerfiles, build images and run containers.
-- ❤️ **Health Monitoring** — Validate deployed applications using health checks.
-- 📊 **Observability** — Monitor CPU, memory, network, container health and uptime.
-- 📜 **Log Management** — Searchable deployment and container logs with secret redaction.
-- 🤖 **AI Intelligence** — Architecture understanding, deployment analysis and incident diagnosis.
-- 🌍 **Multi-Environment CI/CD** — Manage environments and encrypted variables.
-- 🔄 **Rollback** — Maintain deployment versions and roll back to previous healthy deployments.
-- 🔐 **Security** — OAuth, encrypted secrets, rate limiting and secure container execution.
+-  **GitHub Integration** — Connect GitHub and import repositories.
+-  **Repository Intelligence** — Detect languages, frameworks, package managers, monorepos and application structure.
+-  **Deployment Readiness** — Identify blockers, warnings, deployment strategy and readiness score.
+-  **Automated Deployment** — Generate Dockerfiles, build images and run containers.
+-  **Health Monitoring** — Validate deployed applications using health checks.
+-  **Observability** — Monitor CPU, memory, network, container health and uptime.
+-  **Log Management** — Searchable deployment and container logs with secret redaction.
+-  **AI Intelligence** — Architecture understanding, deployment analysis and incident diagnosis.
+-  **Multi-Environment CI/CD** — Manage environments and encrypted variables.
+-  **Rollback** — Maintain deployment versions and roll back to previous healthy deployments.
+-  **Security** — OAuth, encrypted secrets, rate limiting and secure container execution.
 
 ---
 
-# 🖥️ Screenshots
+#  Screenshots
 
 Screenshots are stored in `docs/screenshots/`.
 
 ### Dashboard
 
-![CloudPilot Dashboard](docs/screenshots/dashboard.png)
+![CloudPilot Dashboard](docs/screenshots/Home_dashboard.png)
+
+### Projects and Repositories
+
+![Projects and Repositories](docs/screenshots/projects.png)
 
 ### Repository Analysis
 
-![Repository Analysis](docs/screenshots/repository-analysis.png)
+![Repository Analysis](docs/screenshots/analysis.png)
 
-### Deployment
 
-![Deployment](docs/screenshots/deployment.png)
 
-### Observability
-
-![Observability](docs/screenshots/observability.png)
 
 ### AI Intelligence
 
-![AI Intelligence](docs/screenshots/ai-intelligence.png)
+![AI Intelligence](docs/screenshots/ai.png)
 
 ---
 
-# 🏗️ Overall Architecture
+#  Overall Architecture
 
 CloudPilot follows a modular monorepo architecture with a Next.js frontend, NestJS backend, shared contracts, PostgreSQL, Redis and Docker.
 

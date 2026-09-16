@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { ThemeProvider } from '@/components/ui/theme-provider';
 
 export const metadata: Metadata = {
   title: 'CloudPilot | AI-Powered Cloud Deployment & Observability',
@@ -12,9 +13,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
-      <body className="antialiased selection:bg-cyan-500/30 selection:text-cyan-200">
-        {children}
+    <html lang="en" suppressHydrationWarning>
+      <body className="antialiased selection:bg-sky-500/30 selection:text-sky-200 min-h-screen">
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

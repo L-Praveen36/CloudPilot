@@ -239,10 +239,10 @@ export default function DashboardPage() {
 
   if (isAuthLoading) {
     return (
-      <div className="min-h-screen bg-[#090d16] flex items-center justify-center text-slate-400">
+      <div className="min-h-screen bg-background flex items-center justify-center text-muted-foreground">
         <div className="flex flex-col items-center space-y-4">
-          <div className="w-10 h-10 border-4 border-cyan-500/20 border-t-cyan-400 rounded-full animate-spin" />
-          <p className="text-sm font-medium">Verifying CloudPilot session...</p>
+          <div className="w-9 h-9 border-3 border-sky-500/20 border-t-sky-500 rounded-full animate-spin" />
+          <p className="text-xs font-medium">Verifying CloudPilot session...</p>
         </div>
       </div>
     );
@@ -253,9 +253,9 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#090d16] text-slate-100 flex flex-col justify-between relative overflow-hidden">
+    <div className="min-h-screen bg-background text-foreground flex flex-col justify-between relative overflow-hidden transition-colors">
       {/* Background Ambient Glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[360px] bg-gradient-to-b from-blue-600/10 via-cyan-500/5 to-transparent blur-3xl pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[360px] bg-gradient-to-b from-sky-500/10 via-indigo-500/5 to-transparent blur-3xl pointer-events-none" />
 
       {/* Top Header */}
       <DashboardHeader
